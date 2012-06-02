@@ -1,8 +1,6 @@
 #!/usr/bin/python
 #
-# Web interface for the OSImage-AutoTest
-# Copyright, (C) Mandriva, 2012
-# Copyright, (C) Rafael da Veiga Cabral <cabral@mandriva.com.br>, 2012
+# Web interface for the OSVirt-FunTest
 
 import web
 import urllib
