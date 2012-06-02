@@ -1,0 +1,202 @@
+#!/usr/bin/python
+#
+# Web interface for the OSImage-AutoTest
+# Copyright, (C) Mandriva, 2012
+# Copyright, (C) Rafael da Veiga Cabral <cabral@mandriva.com.br>, 2012
+
+import web
+import urllib
+import re
+import os
+import sys
+import json
+
+urls = (
+    '/', 'index',
+    '/isos/', 'isos',
+    '/oshdimages/', 'oshdimages',
+    '/testresults/', 'testresults',
+    '/testcases/', 'testcases',
+    '/testcaseview/', 'testcaseview',
+    '/testingstatus/', 'testingstatus'
+)
+
+INSTALL_DIR='/home/rafael/osvirt-funtest'
+sys.path.append(INSTALL_DIR)
+from osvirt_funtest.testengine import TestEngine
+from osvirt_funtest.repo import (IsoRepoManager, OsHdImageRepoManager,
+                    TestResultRepoManager, TestCaseRepoManager, SessionManager)
+
+hostname = os.popen("hostname").readline().strip()
+render = web.template.render('templates/')
+page_footer = render.footer().__unicode__()
+
+testEngine = TestEngine({})
+
+class index:
+
+    def GET(self):
+
+        raise web.seeother('/testresults/')
+
+class isos:
+
+    def GET(self):
+
+        isos = IsoRepoManager.listItens(testEngine.engineConfig['iso-repo'])
+        isos_formated = []
+        isore = re.compile(r'^(.+)\.(.+)\.iso$')
+        for iso in isos:
+            match = isore.match(iso)
+            if match is not None:
+                file_ = iso
+                desc = match.group(1)
+                arch = match.group(2)
+                isos_formated.append({'file':file_, 'desc':desc, 'arch':arch})
+        page_header = render.header(hostname,
+                            menu=[("/isos/", "Isos list")]).__unicode__()
+        page_navbar = render.navbar(current='isos').__unicode__()
+        subsessions = [{'link':'','desc':'All available isos'}]
+        page_sidebar = render.sidebar(subsessions=subsessions).__unicode__()
+
+        isos_session = render.isos(isos=isos_formated).__unicode__()
+        return  page_header + page_navbar + page_sidebar + isos_session + page_footer
+
+class oshdimages:
+
+    def GET(self):
+
+        imgs = OsHdImageRepoManager.listItens(testEngine.engineConfig['oshdimage-repo'])
+        imgs_formated = []
+        imgre = re.compile(r'^(.+)_(.+)_(i586|x86_64)\.img$')
+        for img in imgs:
+            file_ = img
+            desc = imgre.match(img).group(1)
+            userdesc = imgre.match(img).group(2)
+            arch = imgre.match(img).group(3)
+            imgs_formated.append({'file':file_, 'desc':desc, 'userdesc':userdesc, 'arch':arch})
+        page_header = render.header(hostname,
+                            menu=[("/oshdimages/", "O. S. images list")]).__unicode__()
+        page_navbar = render.navbar(current='oshdimages').__unicode__()
+        subsessions = [{'link':'','desc':'All available O. S. images'}]
+        page_sidebar = render.sidebar(subsessions=subsessions).__unicode__()
+        imgs_session = render.oshdimages(imgs=imgs_formated).__unicode__()
+        return  page_header + page_navbar + page_sidebar + imgs_session + page_footer
+
+class testresults:
+
+    def GET(self):
+
+        input_ = web.input(action=None)
+        if input_.action is not None:
+            fpath = os.path.join( testEngine.engineConfig['testresult-repo'],
+                                                                      input_.id)
+            if input_.action == 'show_screen':
+                web.header('Content-Type', 'image/x-portable-pixmap')
+                return open(fpath + '/failscreen.ppm', 'rb').read()
+            elif input_.action == 'show_log':
+                web.header('Content-Type', 'text/plain')
+                return open(fpath + '/session.log', 'rb').read()
+            elif input_.action == 'show_video':
+                web.header('Content-Type', 'video/ogg')
+                # web.header('Transfer-Encoding','chunked')
+                print os.path.abspath(os.curdir)
+                return open(fpath + '/session.ogv', 'rb').read()
+
+        results = TestResultRepoManager.listItens(
+                                    testEngine.engineConfig['testresult-repo'])
+        results_formated = []
+        for resultId, resultInfo in results:
+            testCase,iso,osHdImage,sdate,fdate,total,result = resultInfo
+            results_formated.append({'id':resultId, 'testcase':testCase,
+             'iso':iso, 'oshdimage':osHdImage, 'sdate':sdate, 'fdate':fdate,
+                                               'total':total, 'result':result})
+        page_header = render.header(hostname,
+                   menu=[("/testresults/", "Test case results")]).__unicode__()
+        page_navbar = render.navbar(current='test_results').__unicode__()
+        subsessions = [{'link':'','desc':'All available test results'}]
+        page_sidebar = render.sidebar(subsessions=subsessions).__unicode__()
+        results_session = render.testresults(
+                                        results=results_formated).__unicode__()
+        return  (page_header + page_navbar + page_sidebar + results_session
+                                                                 + page_footer)
+
+class testcases:
+
+    def GET(self):
+
+        tcases = TestCaseRepoManager.listItens(testEngine.engineConfig['testcase-repo'])
+        tcases_formated = []
+        tcasere = re.compile(r'^(.+)\.yml$')
+        for tcase in tcases:
+            match = tcasere.match(tcase)
+            if match is not None:
+                desc = match.group(1)
+                file_ = tcase
+                tcases_formated.append({'file':file_, 'desc':desc})
+        page_header = render.header(hostname,
+                            menu=[("/testcases/", "Test Cases list")]).__unicode__()
+        page_navbar = render.navbar(current='test_cases').__unicode__()
+        subsessions = [{'link':'','desc':'All available test cases'}]
+        page_sidebar = render.sidebar(subsessions=subsessions).__unicode__()
+        tcases_session = render.testcases(testcases=tcases_formated).__unicode__()
+        return  page_header + page_navbar + page_sidebar + tcases_session + page_footer
+
+class testcaseview:
+
+    def GET(self):
+
+        input_ = web.input(testcase=None)
+        if input_.testcase is None:
+            raise web.seeother('/testresults/')
+        tpath = testEngine.engineConfig['testcase-repo'] + '/' + input_.testcase
+        with open(tpath) as ft:
+            testcontent = ft.read()
+        page_header = render.header(hostname,
+                            menu=[("/testcases/", "Test Cases"),("/testcaseview/", "Test Case View")]).__unicode__()
+        page_navbar = render.navbar(current='test_cases').__unicode__()
+        subsessions = [{'link':'','desc':'Viewing test case'}]
+        page_sidebar = render.sidebar(subsessions=subsessions).__unicode__()
+        tcaseview_session = render.testcaseview(testcase=input_.testcase,
+                                          testcontent=testcontent).__unicode__()
+        return  page_header + page_navbar + page_sidebar + tcaseview_session + page_footer
+
+
+class testingstatus:
+
+    def GET(self):
+
+        sessions = SessionManager.listItens(testEngine.engineConfig['var-dir'])
+        sessions_formated = []
+        for sessionId, sessionInfo in sessions:
+            testCase,iso,osHdImage,stage,progress,lastUpdate,vncport = sessionInfo
+            sessions_formated.append({'id':sessionId, 'testcase':testCase,
+                        'iso':iso, 'oshdimage':osHdImage, 'stage':stage, 'progress':progress,
+                                            'lastupdate':lastUpdate,'vncport':vncport})
+        page_header = render.header(hostname,
+                   menu=[("/testingstatus/", "Testing Status")]).__unicode__()
+        page_navbar = render.navbar(current='status').__unicode__()
+        subpart = [{'link':'','desc':'All running testing sessions'}]
+        page_sidebar = render.sidebar(subsessions=subpart).__unicode__()
+        sessions_session = render.testsessions(
+                                        sessions=sessions_formated).__unicode__()
+        return  (page_header + page_navbar + page_sidebar + sessions_session
+                                                                 + page_footer)
+
+
+# main web application
+app = web.application(urls, globals())
+
+# real URL prefix - when running standalone, is '', when running under apache should be '/edu/'
+URL_PREFIX=''
+
+# wsgi integration - comment this out when running standalone
+# web.wsgi.runwsgi = lambda func, addr=None: web.wsgi.runfcgi(func, addr)
+
+# enable debug
+# web.config.debug = True
+
+if __name__ == "__main__":
+    print "Starting Mandriva Image Testing Service"
+    app.run()
+

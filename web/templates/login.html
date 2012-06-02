@@ -1,0 +1,12 @@
+$def with(form, errors=None)
+
+$_("You are not logged in or your session has expired.") <br/>
+
+<b>$_("Please login to proceed.")</b> <br/>
+
+<form name="runcmd" method="post">
+$if not form.valid: <p class="error">$_("Invalid parameter, try again"):</p>
+$if errors: <p class="error">$errors</p>
+$:form.render()
+<input type='submit' value='$_("Execute")' />
+</form>

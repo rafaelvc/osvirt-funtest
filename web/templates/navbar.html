@@ -1,0 +1,42 @@
+$def with (current)
+
+<div id="navbar">
+    <img src="../static/images/logomandriva_navbar.gif" alt="Mandriva" id="logo" style="float: right;">
+	<ul>
+	<li id="navbarisos"><a href="/isos/">
+	Isos</a></li>
+	<li id="navbaroshdimages"><a href="/oshdimages/">
+	O.S. Images</a></li>
+	<li id="navbartest_results"><a href="/testresults/">
+	Test Results</a></li>
+	<li id="navbartest_cases"><a href="/testcases/">
+	Test Cases</a></li>
+	<li id="navbarstatus"><a href="/testingstatus/">
+	Status</a></li>
+	</ul>
+</div>
+
+<style type="text/css">
+$ navbarimgs = ['isos','oshdimages','test_results','test_cases','status']
+$navbarimgs.remove(current)
+$for nav in navbarimgs:
+    #navbar ul li#navbar$nav {width: 70px; }
+    #navbar ul li#navbar$nav {background: url("../static/images/${nav}_unload.png") no-repeat transparent;
+                              background-position: 50% 10px;}
+    #navbar ul li#navbar$nav a:hover {background: url("../static/images/${nav}_over.png") no-repeat transparent;
+                                      background-position: 50% 10px	}
+
+#navbar ul li#navbar$current a {background: url("../static/images/${current}.png") no-repeat transparent;
+            border-top: 2px solid #D8D8D7;
+            border-left: 1px solid #B2B2B2;
+            border-right: 1px solid #B2B2B2;
+            border-bottom: 3px solid #FF0000;
+            background-color: #F2F2F2;
+            color: #EE5010;
+            background-position: 50% 8px;}
+#navbar ul li#navbar$current a:hover {   background: url("../static/images/${current}_over.png") no-repeat transparent;
+            background-color: #F2F2F2;
+            color: #EE5010;
+            background-position: 50% 8px	}
+</style>
+

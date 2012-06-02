@@ -1,0 +1,127 @@
+$def with (imgs)
+
+<h2>O. S. images list</h2>
+<div class="fixheight"></div>
+<form name="Form" id="Form" action="#" onsubmit="return false;">
+
+<!-- SEARCH 
+    <div id="loader"><img id="loadimg" src="../static/images/loader.gif" alt="loader" class="loader"></div>
+    <div id="searchSpan" class="searchbox" style="float: right;">
+    <img src="../static/images/search.gif" style="position: relative; top: 2px; float: left;" alt="search">
+    <span class="searchfield">
+Root entity<input name="location" id="location" value="UUID1" class="searchfieldreal" type="HIDDEN">    </span>&nbsp;
+    <span class="searchfield"><input class="searchfieldreal" name="param" id="param" onkeyup="pushSearch(); return false;" type="text">
+    <img src="../static/images/croix.gif" alt="suppression" style="position: relative; top: 3px;" onclick="document.getElementById('param').value =''; pushSearch(); return false;">
+    </span>
+    </div> -->
+
+    <script type="text/javascript">
+/*
+
+        document.getElementById('param').focus();
+
+        document.Form.param.value = "";
+        var maxperpage = 10;
+        if(document.getElementById('maxperpage') != undefined)
+            maxperpage = document.getElementById('maxperpage').value;
+
+        /**
+        * update div with user
+        */
+        function updateSearch() {
+            launch--;
+
+                if (launch==0) {
+                    new Ajax.Updater('container','main.php?module=base&submod=computers&action=ajaxComputersList&filter='+document.Form.param.value+'&location='+document.Form.location.value+'&maxperpage='+maxperpage, { asynchronous:true, evalScripts: true});
+                }
+            }
+
+        /**
+        * provide navigation in ajax for user
+        */
+
+        function updateSearchParam(filt, start, end) {
+            var reg = new RegExp("##", "g");
+            var tableau = filt.split(reg);
+            var location = "";
+            var filter = "";
+            var reg1 = new RegExp(tableau[0]+"##", "g");
+            if (filt.match(reg1)) {
+                if (tableau[0] != undefined) {
+                    filter = tableau[0];
+                }
+                if (tableau[1] != undefined) {
+                    location = tableau[1];
+                }
+            } else if (tableau.length == 1) {
+                if (tableau[0] != undefined) {
+                    location = tableau[0];
+                }
+            }
+            if(document.getElementById('maxperpage') != undefined)
+            {
+                maxperpage = document.getElementById('maxperpage').value;
+            }
+
+            new Ajax.Updater('container','main.php?module=base&submod=computers&action=ajaxComputersList&filter='+filter+'&location='+location+'&start='+start+'&end='+end+'&maxperpage='+maxperpage, { asynchronous:true, evalScripts: true});
+            }
+
+        /**
+        * wait 500ms and update search
+        */
+
+        function pushSearch() {
+            launch++;
+            setTimeout("updateSearch()",500);
+        }
+
+        pushSearch(); */
+    </script>
+
+</form>
+<br><div id="container">
+
+<form method="post"><ul class="navList">
+<!--<li class="previousListInactive">Previous</li>
+<li class="nextListInactive">Next</li>-->
+</ul>
+<p class="listInfos">Total 
+<b>
+$ total = len(imgs)
+$total
+</b>
+</p>
+$if total > 0:
+    <table class="listinfos" border="1" cellpadding="5" cellspacing="0">
+    <thead><tr><td style=""><span style="color: #777; padding-left: 32px;">Name</span></td>
+               <td style=""><span style="color: #777;">Description</span></td>
+               <td style=""><span style="color: #777;">User Description</span></td>
+               <td style=""><span style="color: #777;">Arch</span></td>
+               <td style="text-align: right;"><span style="color: #AAA;">Actions</span></td></tr>
+    </thead>
+    <tbody>
+    $for img in imgs:
+        <tr class="alternate">
+            <td class="machineName">$img['file']</td>
+            <td>$img['desc']</td>
+            <td>$img['userdesc']</td>
+            <td>$img['arch']</td>
+            <td class="action">
+            <ul class="action"></ul></td>
+        </tr>
+    </tbody>
+    </table>
+$else:
+    There are not available images.
+<!--
+<ul class="navList">
+<li class="previousListInactive">Previous</li>
+<li class="nextListInactive">Next</li>
+</ul>-->
+</form></div>
+
+<div class="clearer"></div>
+
+</div><!-- section -->
+
+

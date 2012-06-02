@@ -1,0 +1,3 @@
+"
+Sending user input for the VM should only be done if it is idle (waiting in some where the user input). Detecting such idle state is not trivial because some needed process could be running rather the program is being tested itself. Libproc "procState == idle" could be used to test if the vmplayer is or not idle.
+IsoTestEngine.executeTest - 

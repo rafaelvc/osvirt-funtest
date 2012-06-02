@@ -1,0 +1,38 @@
+OSVirt-FunTest project:
+
+1 - Introduction 
+
+OSVirt-FunTest aims to provide tools for recording and automatically 
+test operation system images. It uses the same concepts of virtual 
+machines usage and its screens capture to make assertions of the operation 
+system user input flow execution as used in the os-autoinst project. Some key points 
+and motivation for the development of new kind of the same system are to 
+turn as easy as possible the test cases creating and maintenace
+having as principle the idea that QA tester should not need to program
+or at least in the average cases have to know about programming to 
+build functional test cases. OSVirt-FunTest uses mainly QEMU 
+technology but also aims to provide multi virtualization
+support in future and is developed in Python for easily maintenance 
+and extensibility what could also make it later in a great framework 
+for operation system functional testing.
+
+2 - Installation 
+
+2.1 Requirements 
+
+
+3 - Execution 
+
+
+References
+
+1 - www.os-autoinst.org
+
+Acknowledges 
+
+Thanks for Mandriva to support OSVirt-FunTest development
+
+
+
+
+

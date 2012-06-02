@@ -1,0 +1,385 @@
+$def with(hostname, menu=[])
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head>
+    <title>Mandriva Image Testing Service</title>
+    <link href="../static/images/global.css" rel="stylesheet" media="screen" type="text/css">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="imagetoolbar" content="false">
+    <meta name="Description" content="">
+    <meta name="Keywords" content="">
+    <link rel="icon" href="../static/images/favicon.ico">
+    <script type="text/javascript" src="../static/js/prototype.js" ></script>
+    <script type="text/javascript" src="../static/js/scriptaculous.js" ></script>
+    <script type="text/javascript" src="../static/js/builder.js"></script>
+	<script type="text/javascript" src="../static/js/effects.js"></script>
+	<script type="text/javascript" src="../static/js/dragdrop.js"></script>
+	<script type="text/javascript" src="../static/js/controls.js"></script>
+	<script type="text/javascript" src="../static/js/slider.js"></script>
+	<script type="text/javascript" src="../static/js/sound.js"></script>
+    <script type="text/javascript" src="../static/js/common.js" ></script>
+<script type="text/javascript">
+
+<!--
+
+var myglobalHandlers = {
+    onCreate : function() {
+        document.getElementById('loadimg').src = "../static/images/loader_p.gif"
+    },
+    onComplete: function() {
+            if(Ajax.activeRequestCount== 0) {
+                document.getElementById('loadimg').src = "../static/images/loader.gif"
+            }
+        }
+    };
+
+    Ajax.Responders.register(myglobalHandlers);
+
+
+
+// pf="prefix" and ck="checked" (0|1)
+function checkAll (pf,ck) {
+cbox=document.getElementsByTagName('INPUT');
+  for (i=0; i<cbox.length; i++){
+    if (cbox[i].type=='checkbox'){
+      if (cbox[i].name.indexOf(pf) > -1) {
+        if (ck == "1") { cbox[i].checked = true; } else { cbox[i].checked = null; }
+      }
+    }
+  }
+}
+
+// select all select with class 'list' options in the page
+// usefull to run before post a form with
+// selects in it.
+function selectAll() {
+    $$("select.list option").each(function(e) {
+        e.selected = true;
+    });
+}
+
+function getStyleObject(objectId) {
+    // cross-browser function to get an object's style object given its id
+    if(document.getElementById && document.getElementById(objectId)) {
+    // W3C DOM
+    return document.getElementById(objectId).style;
+    } else if (document.all && document.all(objectId)) {
+    // MSIE 4 DOM
+    return document.all(objectId).style;
+    } else if (document.layers && document.layers[objectId]) {
+    // NN 4 DOM.. note: this won't find nested layers
+    return document.layers[objectId];
+    } else {
+    return false;
+    }
+} // getStyleObject
+
+function changeObjectDisplay(objectId, newVisibility) {
+    // get a reference to the cross-browser style object and make sure the object exists
+    var styleObject = getStyleObject(objectId);
+    if(styleObject) {
+    styleObject.display = newVisibility;
+    return true;
+    } else {
+    // we couldn't find the object, so we can't change its visibility
+    return false;
+    }
+} // changeObjectVisibility
+
+
+function toggleVisibility(layer_ref)
+{
+    var state = getStyleObject(layer_ref).display;
+    if (state == 'none') {
+        state = 'inline';
+    } else {
+        state = 'none';
+    }
+    changeObjectDisplay(layer_ref, state)
+}
+
+function PopupWindow(evt, url, width) {
+    $('popup').style.width = width + "px";
+    if (!evt) evt = window.event;
+    new Ajax.Updater('__popup_container', url, { onComplete: PopupWindowDisplay(evt, width), evalScripts:true});
+}
+
+function PopupWindowDisplay(evt, width) {
+    obj = document.getElementById('popup');
+    obj.style.left = parseInt(evt.clientX) + document.documentElement.scrollLeft - parseInt(width) + "px";
+    obj.style.top = (parseInt(evt.clientY) + document.documentElement.scrollTop) + "px";
+    getStyleObject('popup').display = 'inline';
+}
+
+function showPopup(evt, url) {
+    $('popup').style.width = '300px';
+    /*new Ajax.Updater('__popup_container', url, {onComplete: displayPopup(evt), evalScripts:true});*/
+    new Ajax.Request(url, {
+        onSuccess: function(t) {
+            try {
+                $('__popup_container').update(t.responseText);
+            }
+            catch(ex) {
+                $('__popup_container').innerHTML = t.responseText;
+            }
+        },
+        onComplete: displayPopup(evt)
+    });
+}
+
+function showPopupFav(evt,url) {
+    $('popup').style.width = '200px';
+    /*new Ajax.Updater('__popup_container',url,{onComplete: displayPopupFav(evt), evalScripts:true});*/
+    new Ajax.Request(url, {
+        onSuccess: function(t) {
+            try {
+                $('__popup_container').update(t.responseText);
+            }
+            catch(ex) {
+                $('__popup_container').innerHTML = t.responseText;
+            }
+        },
+        onComplete: displayPopupFav(evt)
+    });
+}
+
+
+function showPopupUp(evt,url) {
+    $('popup').style.width = '300px';
+    /*new Ajax.Updater('__popup_container',url,{onComplete: displayPopupUp(evt), evalScripts:true});*/
+    new Ajax.Request(url, {
+        onSuccess: function(t) {
+            try {
+                $('__popup_container').update(t.responseText);
+            }
+            catch(ex) {
+                $('__popup_container').innerHTML = t.responseText;
+            }
+        },
+        onComplete: displayPopupUp(evt)
+    });
+}
+
+function showPopupCenter(url) {
+    /*new Ajax.Updater('__popup_container',url,{onComplete: displayPopupCenter(), evalScripts:true});*/
+    new Ajax.Request(url, {
+        onSuccess: function(t) {
+            try {
+                $('__popup_container').update(t.responseText);
+            }
+            catch(ex) {
+                $('__popup_container').innerHTML = t.responseText;
+            }
+        },
+        onComplete: displayPopupCenter()
+    });    
+}
+
+function displayPopupFav (evt) {
+    if (!evt) evt = window.event;
+    obj = document.getElementById('popup');
+    obj.style.left = parseInt(evt.clientX)+document.documentElement.scrollLeft-100+"px";
+    obj.style.top = (parseInt(evt.clientY)+document.documentElement.scrollTop)+"px";
+    getStyleObject('popup').display='inline';
+}
+
+function displayPopup (evt) {
+    if (!evt) evt = window.event;
+    obj = document.getElementById('popup');
+    obj.style.left = parseInt(evt.clientX)+document.documentElement.scrollLeft-300+"px";
+    obj.style.top = (parseInt(evt.clientY)+document.documentElement.scrollTop)+"px";
+    getStyleObject('popup').display='inline';
+}
+
+function displayPopupUp (evt) {
+    if (!evt) evt = window.event;
+    $('popup').style.left = parseInt(evt.clientX)+document.documentElement.scrollLeft+"px";
+    $('popup').style.top = (parseInt(evt.clientY)+document.documentElement.scrollTop-350)+"px";
+    $('popup').style.display = 'inline';
+}
+
+function displayPopupCenter () {
+    $('popup').style.width = '50%';
+    $('popup').style.left = '25%';
+    $('popup').style.top  = '15%';
+    $('popup').style.display = 'inline';
+}
+
+function validateForm() {
+    var resultok;
+    resultok = 0;
+    var resultbad;
+    resultbad = 0;
+    var inputlist;
+    inputlist = document.getElementsByTagName('input');
+    // problem with caracter '\$' in A web.py
+    // inputlist = A(inputlist);
+    inputlist.each( function(input){
+        try {
+            var result = input.validate()
+                if (result!=true) {
+                    resultbad++;
+                } else {
+                    resultok++;
+                }
+        }
+        catch (ex) {
+            //do nothing... function not exist
+        }
+    });
+    if (resultbad!=0) {
+        alert('Form cannot be submit. Input errors are highlighted in red.');
+        return false;
+    } else {
+        return true;
+    }
+    return false;
+}
+
+-->
+
+</script>
+<style type="text/css"><!--li.install a {
+        padding: 0px 0px 5px 20px;
+        margin: 0 0px 0 0px;
+        background-image: url("modules/base/graph/computers/install.png");
+        background-repeat: no-repeat;
+        background-position: left top;
+        line-height: 18px;
+        text-decoration: none;
+        color: #FFF;
+}
+
+li.logfile a {
+        padding: 0px 0px 5px 20px;
+        margin: 0 0px 0 0px;
+        background-image: url("modules/base/graph/computers/logfile.png");
+        background-repeat: no-repeat;
+        background-position: left top;
+        line-height: 18px;
+        text-decoration: none;
+        color: #FFF;
+}
+
+li.inventory a {
+    	padding: 0px 0px 5px 23px;
+        margin: 0 0px 0 0px;
+        background-image: url("modules/inventory/graph/images/actions/inventory.png");
+        background-repeat: no-repeat;
+        background-position: left top;
+        line-height: 18px;
+        text-decoration: none;
+        color: #FFF;
+}
+
+li.remove_machine a {
+        padding: 3px 0px 5px 20px;
+        margin: 0 0px 0 0px;
+        background-image: url("modules/msc/graph/images/actions/delete.png");
+        background-repeat: no-repeat;
+        background-position: left top;
+        line-height: 18px;
+        text-decoration: none;
+        color: #FFF;
+}
+
+li.csv a {
+        padding: 3px 0px 5px 20px;
+        margin: 0 0px 0 0px;
+        background-image: url("modules/base/graph/computers/csv.png");
+        background-repeat: no-repeat;
+        background-position: left top;
+        line-height: 18px;
+        text-decoration: none;
+        color: #FFF;
+}
+
+li.download a {
+        padding: 0px 0px 5px 20px;
+        margin: 0 0px 0 0px;
+        background-image: url("modules/base/graph/computers/download.png");
+        background-repeat: no-repeat;
+        background-position: left top;
+        line-height: 18px;
+        text-decoration: none;
+        color: #FFF;
+}
+
+li.vncclient a {
+        padding: 0px 0px 5px 25px;
+        margin: 0 0px 0 0px;
+        background-image: url("modules/base/graph/computers/vncclient.png");
+        background-repeat: no-repeat;
+        background-position: left top;
+        line-height: 18px;
+        text-decoration: none;
+        color: #FFF;
+}
+
+li.imaging a {
+	padding: 1px 3px 5px 20px;
+        margin: 0 0px 0 0px;
+        background-image: url("modules/base/graph/computers/imaging.png");
+        background-repeat: no-repeat;
+        background-position: left top;
+        line-height: 18px;
+        text-decoration: none;
+        color: #FFF;
+}
+
+.LOG_EMERG {
+  color: red;
+}
+.LOG_ALERT {
+  color: red;
+}
+.LOG_CRIT {
+  color: red;
+}
+.LOG_ERR {
+  color: red;
+}
+.LOG_WARNING {
+  color: orange;
+}
+.LOG_NOTICE {
+  color: navy;
+}
+.LOG_INFO {
+  color: black;
+}
+.LOG_DEBUG {
+  color: gray;
+}
+--></style>
+</head>
+
+$if '/testcaseview/' in [link for link,desc in menu]:
+    <link href="/static/js/prettify/prettify.css" type="text/css" rel="stylesheet" />
+    <script type="text/javascript" src="/static/js/prettify/prettify.js"></script>
+    <body onload='prettyPrint()'>
+$else:
+    <body>
+
+<div id="wrapper">
+
+<div id="header">
+<!--
+<div id="menuTopRight">
+  <ul>
+    <li id="expertmode"><a href="">Click to switch to&nbsp;expert mode</a></li>
+    <li id="disconnect"><a title="logout" href="http://10.8.0.6/mmc/logout/index.php" onclick="showPopup(event,'/mmc/logout/index.php'); event.returnValue=false; return false;">Logout&nbsp;root</a></li> 
+  </ul>
+</div> -->
+<p class="path">
+    <span style="color: #FFF">$hostname</span>&nbsp;: <a href="/">Home</a> &gt; 
+            $ track = []
+            $for (url, name) in menu:
+               $track.append("<a href=\"%s\">%s</a>" % (url, name))
+            $:"&gt;".join(track)
+</p>
+</div>
+
+
+
+
+

@@ -1,0 +1,33 @@
+$def with (subsessions)
+
+<div id="content">
+<div id="popup" class="popup" style="display: none;">
+    <div style="float:right"><a href="#" onclick="getStyleObject('popup').display='none'; return false;"><img src="../static/images/icn_close.png" alt="[x]"></a></div>
+    <div id="__popup_container">
+        If this phrase does not change, you browser is not supported by the MMC application    </div>
+</div> 
+
+
+<div id="sectionTopRight">
+<img src="../static/images/spacer.gif" alt="">
+</div>
+
+<div id="sectionContainer">
+
+<div id="section">
+<style type="text/css">
+<!--
+#sidebar ul.isos li#index a {
+                    background-color: #FFF;
+                    color: #666;
+                    border-right: 1px solid #FFF;background-image: url(../static/images/isos_active.png);
+                }-->
+</style>
+
+<div id="sidebar">
+<ul class="isos">
+$for sub in subsessions:
+   <li id=""><a href="$sub['link']">$sub['desc']</a></li>
+</ul>
+</div>
+

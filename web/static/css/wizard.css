@@ -1,0 +1,438 @@
+/**
+ * (c) 2004-2007 Linbox / Free&ALter Soft, http://linbox.com
+ * (c) 2007 Mandriva, http://www.mandriva.com
+ *
+ * $Id: global.css 400 2008-03-10 17:52:39Z cedric $
+ *
+ * This file is part of Mandriva Management Console (MMC).
+ *
+ * MMC is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * MMC is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with MMC; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+*/
+/*---
+$Id: global.css 400 2008-03-10 17:52:39Z cedric $
+
+Sirius Technologies // Interface serveur fichiers
+Auteur : Arteca Design inc.
+Derniere revision : 16 Juin 2004
+
+/*----------------------------------*/
+
+/* ---------------------------------------- */
+/* 1. Style pour le header	                */
+/* ---------------------------------------- */
+
+#header {
+	background-color: #EE4510;
+	padding: 0 17px 7px 17px;
+	border-top: solid 1px #000;
+	border-bottom: solid 1px #000;
+	background-image: url("../images/bg_header.gif");
+	background-repeat: repeat-x;
+	height: 17px;
+}
+
+#header p {
+        color: #ffffff;
+        padding: 4px 0 0 0;
+        margin: 0;
+}
+
+* {
+    font-family: "Lucida Grande", "Lucida Sans", Sans, Verdana, Tahoma, Arial, sans-serif;
+    font-size: 12px;
+}
+
+body {
+        background-color: #F2F2F2;
+        color: #333;
+        padding: 0;
+        margin: 0;
+        padding-bottom: 50px;
+}
+
+a { 
+    text-decoration: none; 
+    color: #2F4E9E; 
+}
+
+.smalltitle {
+    color: #00164e;
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+.secondtitle {
+    color: #00164e;
+    font-size: 0.8em;;
+}
+
+/* Commented Backslash Hack hides rule from IE5-Mac \*/
+#header #menuTopRight  ul li { float: left; }
+#header #menuTopRight ul li a { width: auto; }
+/* End IE5-Mac hack */
+
+/* ---------------------------------------- */
+/* 2. Style pour la Navbar                  */
+/* ---------------------------------------- */
+
+#navbar {
+	padding: 5px 17px 0px 17px;
+	height: 60px;
+	background-color: #FFF;
+	background-image: url("../images/bg_navbar.gif"); 
+	background-repeat: repeat-x;
+}
+
+.titrepage {
+    color: #2F4E9E;
+    font-weight: bold;
+    font-size: 2.1em;
+}
+
+
+/* ---------------------------------------- */
+/* 4. Style pour la section Contenu         */
+/* ---------------------------------------- */
+
+#content {
+	/* background-color:  #ffff00; /* Couleur Verte test */
+	 background-color:  #F2F2F2; 
+	padding: 0px 17px 15px 0px;
+	background-image: url("../images/borderTopContent.gif");
+	background-repeat: repeat-x;
+}
+
+html>body #section {
+    min-height: 350px;
+}
+
+
+#section {
+	/* background-color:  #00ff00; /* Couleur Verte test */
+	background-color: #FFFFFF;
+	height: 100%;
+	padding: 8px 25px 8px 25px;
+	margin: 0 0 0 190px;
+	border-left: solid 1px #A0A0A0;
+	border-right: solid 1px #A0A0A0;
+}
+
+#menu {
+        background-color:  #ffffff; /* Couleur Verte test */
+        height: 100%;
+        padding: 8px 25px 8px 25px;
+        margin: 0 0 0 190px;
+        border-left: solid 1px #A0A0A0;
+        border-right: solid 1px #A0A0A0;
+}
+
+#section h1, h2, h3, h4, h5, h6 {
+	color: #444;
+	font-weight: normal;
+	padding: 0 0 10px 0;
+	margin: 0;
+	/* width: 100%; */
+}
+
+#section h2 { font-size: 1.5em; }
+/* ######################################### */
+
+.sectiontable {
+	width: 100%;
+	color: #00164e;
+	border-color: #CCCCCC;
+	border-width: 0 0 1px 0;
+	border-style: solid;
+	margin: 0 1px 10px 0;
+	margin-right: 1px;
+	float: none;
+	/* background-color: #F2F2F2 */
+}
+
+/* Commented Backslash Hack hides rule from IE5-Mac \*/
+* html #section table {float: left; margin: 0 0 10px 0;}
+/* End IE5-Mac hack */
+
+/* ---------------------------------------- */
+/* 6. Style pour les forms                  */
+/* ---------------------------------------- */
+
+form {
+	padding: 0;
+	margin: 0;
+}
+
+/* ---------------------------------------- */
+/*    CSS pour bouton                       */
+/* ---------------------------------------- */
+
+.btnPrimary {
+        font-weight: bold;
+        background-color: #21449C;
+        font-size: 0.9em;
+        color: #FFF;
+        padding: 5px;
+        margin: 0 5px 0 0;
+}
+
+.btnSecondary {
+        background-color: #F0EFEF;
+        font-size: 0.9em;
+        color: #333;
+        padding: 5px;
+        margin: 0 5px 0 0;
+}
+
+.ok { color: green; }
+.nok { color: red; }
+.warn { color: #EE6600; }
+.nok a { color: red; }
+.info { color: #888; }
+.conflict { color: #aaa; }
+.conflict a { color: #D11919; }
+
+#overlay {
+    background-color: black;
+    height:500px;
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height: 100%;
+    z-index:80;
+    opacity: 0.8;
+}
+#install {
+    position: absolute;
+    width: 80%;
+    left: 10%;
+    top: 10%;
+    z-index:90;
+    background: white;
+    border: 1px solid #A0A0A0;
+    padding: 8px;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+}
+p.buttons {
+    margin-bottom: 0px;
+}
+p.desc {
+    margin-top: 0;
+    clear: left;
+}
+p.configure {
+    margin: 0;
+    margin-top: -10px;
+    text-align: right;
+}
+p.configure a img {
+    border: none;
+    opacity: 0.8;
+}
+p.configure a:hover img {
+    opacity: 1;
+}
+p.desc2 {
+    margin-bottom: 5px;
+    margin-top: -10px;
+    font-style: italic;
+}
+#log {
+    height: 300px;
+}
+#log, .log {
+    border: 3px solid #555;
+    overflow: auto;
+    padding: 5px;
+    background: #222;
+    color: white;
+    margin: 10px;
+    margin-bottom: 0px;
+    font-family: monospace;
+    font-size: 0.9em;
+    white-space: pre;
+}
+.log {
+    font-size: 1em;
+    border: 2px solid #999;
+    background: white;
+    color: black;
+    margin-bottom: 10px;
+    margin-top: 0px;
+}
+.btnPrimary[disabled] {
+    font-weight: bold;
+    background-color: #777;
+    font-size: 0.9em;
+    color: #999;
+    padding: 5px;
+    margin: 0 5px 0 0;
+}
+.btnSecondary[disabled] {
+    background-color: #777;
+    font-size: 0.9em;
+    color: #999;
+    padding: 5px;
+    margin: 0 5px 0 0;
+}
+#content {
+    padding-top: 15px;
+}
+#section {
+    border: 1px solid #A0A0A0;
+    -moz-border-radius: 10px;
+    margin-left: 15px;
+}
+table {
+    border: 1px solid #A0A0A0;
+    margin-bottom: 15px;
+    padding: 5px;
+}
+#start {
+    border: none;
+    padding: 0px;
+}
+#start td {
+    background: #F2F2FF;
+    margin-right: 15px;
+    vertical-align: top;
+    padding: 10px;
+}
+
+.stackicon {
+    float: left;
+    width: 60px;
+    text-align: center;
+    padding-top: 2px;
+}
+h4, legend {
+    font-size: 1.3em;
+    color: #2F4E9E;
+}
+fieldset {
+    border: 1px solid #aaa;
+}
+.stackdetail {
+    margin-left: 60px;
+}
+.stackdetail p {
+    margin: 0;
+}
+#header a {
+    color: white;
+    font-weight: bold;
+}
+#start a {
+    border-bottom: 1px dashed;
+}
+#start a:hover {
+    border-bottom: 1px solid;
+}
+code {
+    font-size: 0.9em;
+}
+label.config {
+    float: left;
+    width: 35%;
+    font-weight: bold;
+    text-align: right;
+    padding-right: 10px;
+}
+label.config a, label a {
+    color: #2F4E9E;
+}
+label.config a span, label a span {
+    display: none;
+    font-weight: normal;
+    text-align: left;
+    font-size: 11px;
+}
+label a span ul li { font-size: 11px; }
+label.config a:hover span { 
+    position: absolute;
+    left: 30%;
+    display: block;
+    width: 250px;
+    background: white;
+    padding: 5px;
+    -moz-border-radius: 5px;
+    border: 1px solid #777;
+}
+
+label a:hover span {
+    position: absolute;
+    display: block;
+    max-width: 250px;
+    background: white;
+    padding: 5px;
+    -moz-border-radius: 5px;
+    border: 1px solid #777;
+}
+
+label span ul {
+    margin: 0;
+    margin-left: 15px;
+    padding: 0;
+    font-size: 12px; 
+}
+
+input[type="text"], input[type="password"] {
+    border: 1px solid #777;
+    background: #FAFAFF;
+    padding: 1px;
+}
+
+a.logout {
+    float: right;
+    padding-top: 3px;
+    background: url("../images/icn_disconnect.gif") no-repeat 0 -15px transparent;
+    padding-left: 20px;
+}
+
+a.logout:hover { background-position: 0 4px; }
+
+hr {
+    border: 1px solid #bbb;
+    height: 1px;
+}
+
+.conflog {
+    border: 1px solid #aaa;
+    -moz-border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.conflog h2 {
+    border-bottom: 1px solid #aaa;
+    margin: 0;
+    padding: 5px;
+    background: #F2F2F2;
+}
+
+.conflog .sum {
+    padding: 5px;
+}
+
+.conflog .sum h4 {
+    margin: 0;
+    padding: 0;
+}
+
+.conflog .sum .details {
+    font-size: 0.9em;
+    margin: 7px;
+}
+

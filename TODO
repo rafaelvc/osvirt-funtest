@@ -1,0 +1,23 @@
+- Interface for QA fix/build test cases mainly recently recorded ones
+- [Web]: Allow viewing test case screens sequence, thumbnails ?
+- [Web]: Fix the pretty js for yaml syntax highlight, scpecific sections as 
+        'screen' could be highlighted
+- Exception handling in the source
+- Do more Mandriva test cases
+- [Web]: Clean up pulse html unused code
+- Test images from others distributions
+- Bugzilla integration, a callback/hook for publishing tickets in test fail cases
+- [Web]: comment out unused images from global.css as there are many 404 errors
+- [Web]: integrating testcase_archvive.py in the test case list
+- enable opencv template matching for finding subscreens, take a look on opensurf
+- git/svn integration in order source control of test cases
+- [BUG]: if it is not provided a short description for images one should be generated
+		 otherwise img name gets desc_<shor-desc=null>_arch.img in the repo and future
+		 executions without short description will raise img already exists.
+- [BUG]: recording, check if the test case name informed already exists in the repo
+- integration with bootstrap tools as mdvvhdprov or mbootstrap to create fresh cooker
+  images for testing
+
+- Main features: possibility to record input events
+				 interface for test case edition
+				 test model improving
