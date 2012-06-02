@@ -1,0 +1,42 @@
+#!/usr/bin/python 
+
+import osvirt_funtest.commands as commands
+from osvirt_funtest.testengine import TestEngine
+import sys
+
+class TestApp:
+
+    def __init__(self, command, cmdOptions):
+
+        self.command = self._commandFactory(command, cmdOptions)
+        self.options = cmdOptions
+
+    def executeCommand (self):
+
+        self.command.parseOptions()
+        self.testEngine = TestEngine(self.command.optionsParsed)
+        self.command.run(self.testEngine)
+
+    def _commandFactory (self, commandName, cmdOptions):
+
+        cmdType = commandName.capitalize()
+        return getattr( commands, 'Command' + cmdType )(cmdType, cmdOptions)
+
+def usage():
+    sys.stdout.write("""Usage: osimage-autotest test|record|info options
+Use isotest <subcommand> -h|--help for detailed information about\
+ subcommand options.\n""")
+
+if __name__ == "__main__":
+
+    try:
+        subcommand = sys.argv[1]
+        cmdOptions = sys.argv[1:]
+        if subcommand not in commands.AVAILABLE:
+            raise commands.UnknownCommand
+        testApp = TestApp(subcommand, cmdOptions)
+        testApp.executeCommand()
+    except (IndexError, commands.UnknownCommand) as e:
+        usage()
+        sys.exit(1)
+
