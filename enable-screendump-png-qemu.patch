@@ -1,0 +1,229 @@
+Author: Rafael da Veiga Cabral
+Sent to QEMU-devel mail list on 03/17/2012
+--- configure	2011-10-19 13:54:48.000000000 +0000
++++ configure	2012-03-15 13:33:26.000000000 +0000
+@@ -141,6 +141,7 @@
+ attr=""
+ vhost_net=""
+ xfs=""
++dump_png=""
+ 
+ gprof="no"
+ debug_tcg="no"
+@@ -790,6 +791,10 @@
+   ;;
+   --disable-guest-agent) guest_agent="no"
+   ;;
++  --disable-dump-png) dump_png="no"
++  ;;
++  --enable-dump-png) dump_png="yes"
++  ;;
+   *) echo "ERROR: unknown option $opt"; show_help="yes"
+   ;;
+   esac
+@@ -1075,6 +1080,8 @@
+ echo "  --enable-usb-redir       enable usb network redirection support"
+ echo "  --disable-guest-agent    disable building of the QEMU Guest Agent"
+ echo "  --enable-guest-agent     enable building of the QEMU Guest Agent"
++echo "  --disable-dump-png       disable PNG for screendump output"
++echo "  --enable-dump-png        enable PNG for screendump output"
+ echo ""
+ echo "NOTE: The object files are built at the place where configure is launched"
+ exit 1
+@@ -2610,6 +2617,40 @@
+ fi
+ 
+ ##########################################
++# DUMP PNG detection
++if test "$dump_png" = "yes" ; then
++cat > $TMPC <<EOF
++//#include <stdio.h>
++#include <png.h>
++#include <stddef.h>
++int main(void) {
++    png_structp png_ptr;
++    png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
++    return 0;
++}
++EOF
++  if $pkg_config libpng --modversion >/dev/null 2>&1; then
++    dump_png_cflags=`$pkg_config libpng --cflags 2> /dev/null`
++    dump_png_libs=`$pkg_config libpng --libs 2> /dev/null`
++  else
++    dump_png_cflags=""
++    dump_png_libs="-lpng"
++  fi
++  if compile_prog "$dump_png_cflags" "$dump_png_libs" ; then
++    dump_png=yes
++    libs_softmmu="$dump_png_libs $libs_softmmu"
++  else
++    if test "dump_png" = "yes" ; then
++      feature_not_found "dump-png"
++    fi
++    dump_png=no
++  fi
++fi
++#########################################
++
++
++
++##########################################
+ # End of CC checks
+ # After here, no more $cc or $ld runs
+ 
+@@ -2776,6 +2817,7 @@
+ echo "usb net redir     $usb_redir"
+ echo "OpenGL support    $opengl"
+ echo "build guest agent $guest_agent"
++echo "Dump png $dump_png"
+ 
+ if test $sdl_too_old = "yes"; then
+ echo "-> Your SDL version is too old - please upgrade to have SDL support"
+@@ -3083,6 +3125,11 @@
+   echo "CONFIG_OPENGL=y" >> $config_host_mak
+ fi
+ 
++if test "$dump_png" = "yes" ; then
++  echo "CONFIG_DUMP_PNG=y" >> $config_host_mak
++  echo "DUMP_PNG_CFLAGS=$dump_png_cflags" >> $config_host_mak
++fi
++
+ # XXX: suppress that
+ if [ "$bsd" = "yes" ] ; then
+   echo "CONFIG_BSD=y" >> $config_host_mak
+--- hw/vga.c	2011-10-19 13:54:48.000000000 +0000
++++ hw/vga.c	2012-03-17 21:53:12.000000000 +0000
+@@ -29,6 +29,10 @@
+ #include "pixel_ops.h"
+ #include "qemu-timer.h"
+ 
++#ifdef CONFIG_DUMP_PNG
++#include <png.h>
++#endif
++
+ //#define DEBUG_VGA
+ //#define DEBUG_VGA_MEM
+ //#define DEBUG_VGA_REG
+@@ -2329,7 +2333,14 @@
+                                 int x, int y, int w, int h)
+ {
+     if (screen_dump_filename) {
+-        ppm_save(screen_dump_filename, ds->surface);
++#ifdef CONFIG_DUMP_PNG
++		if (is_png_extension(screen_dump_filename))
++			png_save(screen_dump_filename, ds->surface);
++		else
++			ppm_save(screen_dump_filename, ds->surface);
++#else
++		ppm_save(screen_dump_filename, ds->surface);
++#endif
+         screen_dump_filename = NULL;
+     }
+ }
+@@ -2342,6 +2353,95 @@
+ {
+ }
+ 
++#ifdef CONFIG_DUMP_PNG
++int is_png_extension(const char * filename)
++{
++    if (!(filename == NULL)) {
++        char * c;
++        for (c = filename;*c != NULL; ++c);
++        c -= 4;
++        if (*c++ == '.' && *c++ == 'p' && *c++ == 'n' && *c == 'g')
++            return 1;
++    }
++    return 0;
++}
++
++int png_save(const char *filename, struct DisplaySurface *ds)
++{
++    FILE *f;
++    uint8_t *d, *d1;
++    uint32_t v;
++    int y, x;
++    uint8_t r, g, b;
++    // int ret;
++
++    f = fopen(filename, "wb");
++    if (!f)
++        return -1;
++
++	/* initialize stuff */
++	png_structp png_ptr;
++    png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
++	if (!png_ptr)
++		return -1;
++
++	png_infop info_ptr;
++    info_ptr = png_create_info_struct(png_ptr);
++    if (!info_ptr)
++		return -1;
++
++	/* write header */
++    if (setjmp(png_jmpbuf(png_ptr)))
++		return -1;
++
++	// bit depth 16
++    png_set_IHDR(png_ptr, info_ptr, ds->width, ds->height,
++                 8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
++                 PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
++    
++	/* Process ds */
++    png_byte ** row_pointers = png_malloc(png_ptr, ds->height * sizeof(png_byte *));
++    d1 = ds->data;
++    for(y = 0; y < ds->height; y++) {
++		row_pointers[y] = (png_byte *) png_malloc(png_ptr, sizeof(uint8_t) * ds->width * 3);
++        png_byte * row = row_pointers[y];
++        d = d1;
++        for(x = 0; x < ds->width; x++) {
++            if (ds->pf.bits_per_pixel == 32) {
++                v = *(uint32_t *)d;
++			}
++            else {
++                v = (uint32_t) (*(uint16_t *)d);
++			}
++            r = ((v >> ds->pf.rshift) & ds->pf.rmax) * 256 /
++                (ds->pf.rmax + 1);
++            g = ((v >> ds->pf.gshift) & ds->pf.gmax) * 256 /
++                (ds->pf.gmax + 1);
++            b = ((v >> ds->pf.bshift) & ds->pf.bmax) * 256 /
++                (ds->pf.bmax + 1);
++			*row++ = r;
++			*row++ = g;
++			*row++ = b;
++            d += ds->pf.bytes_per_pixel;
++        }
++        d1 += ds->linesize;
++    }
++
++	png_init_io(png_ptr, f);
++	png_set_rows(png_ptr, info_ptr, row_pointers);
++    png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
++
++    /* cleanup heap allocation */
++    for (y=0; y<ds->height; y++)
++        png_free(png_ptr, row_pointers[y]);
++    png_free(png_ptr, row_pointers);
++    fclose(f);
++	return 0;
++}
++#endif
++
+ int ppm_save(const char *filename, struct DisplaySurface *ds)
+ {
+     FILE *f;
+--- hw/vga_int.h	2011-10-19 13:54:48.000000000 +0000
++++ hw/vga_int.h	2012-03-17 22:19:38.000000000 +0000
+@@ -205,6 +205,10 @@
+ void vga_mem_writeb(void *opaque, target_phys_addr_t addr, uint32_t val);
+ void vga_invalidate_scanlines(VGACommonState *s, int y1, int y2);
+ int ppm_save(const char *filename, struct DisplaySurface *ds);
++#ifdef CONFIG_DUMP_PNG
++int is_png_extension(const char * filename);
++int png_save(const char *filename, struct DisplaySurface *ds);
++#endif
+ 
+ void vga_draw_cursor_line_8(uint8_t *d1, const uint8_t *src1,
+                             int poffset, int w,
