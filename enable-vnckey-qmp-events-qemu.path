@@ -1,0 +1,315 @@
+diff -u -r ./monitor.c ../osimage-autotest/qemu-kvm-0.15.1//monitor.c
+--- ./monitor.c	2012-06-23 11:34:13.000000000 -0300
++++ ../osimage-autotest/qemu-kvm-0.15.1//monitor.c	2012-03-07 11:25:35.000000000 -0300
+@@ -450,6 +450,9 @@
+         case QEVENT_VNC_DISCONNECTED:
+             event_name = "VNC_DISCONNECTED";
+             break;
++        case QEVENT_VNC_KEYEVENT:
++            event_name = "VNC_KEYEVENT";
++            break;
+         case QEVENT_BLOCK_IO_ERROR:
+             event_name = "BLOCK_IO_ERROR";
+             break;
+@@ -963,6 +966,27 @@
+     return 0;
+ }
+ 
+-static void do_sendkey(Monitor *mon, const QDict *qdict)
++static int do_sendkey(Monitor *mon, const QDict *qdict, QObject **ret_data)
+ {
+     char keyname_buf[16];
+     char *separator;
+@@ -1881,17 +1905,17 @@
+             pstrcpy(keyname_buf, sizeof(keyname_buf), string);
+             if (keyname_len > sizeof(keyname_buf) - 1) {
+                 monitor_printf(mon, "invalid key: '%s...'\n", keyname_buf);
+-                return;
++                return -1;
+             }
+             if (i == MAX_KEYCODES) {
+                 monitor_printf(mon, "too many keys\n");
+-                return;
++                return -1;
+             }
+             keyname_buf[keyname_len] = 0;
+             keycode = get_keycode(keyname_buf);
+             if (keycode < 0) {
+                 monitor_printf(mon, "unknown key: '%s'\n", keyname_buf);
+-                return;
++                return -1;
+             }
+             keycodes[i++] = keycode;
+         }
+@@ -1910,6 +1934,7 @@
+     /* delayed key up events */
+     qemu_mod_timer(key_timer, qemu_get_clock_ns(vm_clock) +
+                    muldiv64(get_ticks_per_sec(), hold_time, 1000));
++    return 0;
+ }
+ 
+ static int mouse_button_state;
+
+diff -u -r ./monitor.h ../osimage-autotest/qemu-kvm-0.15.1//monitor.h
+--- ./monitor.h	2012-06-23 11:34:13.000000000 -0300
++++ ../osimage-autotest/qemu-kvm-0.15.1//monitor.h	2012-03-07 11:25:36.000000000 -0300
+@@ -29,6 +29,7 @@
+     QEVENT_VNC_CONNECTED,
+     QEVENT_VNC_INITIALIZED,
+     QEVENT_VNC_DISCONNECTED,
++    QEVENT_VNC_KEYEVENT,
+     QEVENT_BLOCK_IO_ERROR,
+     QEVENT_RTC_CHANGE,
+     QEVENT_WATCHDOG,
+diff -u -r ./qmp-commands.hx ../osimage-autotest/qemu-kvm-0.15.1//qmp-commands.hx
+--- ./qmp-commands.hx	2012-06-23 11:34:13.000000000 -0300
++++ ../osimage-autotest/qemu-kvm-0.15.1//qmp-commands.hx	2012-03-07 11:25:37.000000000 -0300
+@@ -227,6 +227,33 @@
+ EQMP
+ 
+     {
++        .name       = "sendkey",
++        .args_type  = "string:s,hold_time:i?",
++        .params     = "keys [hold_ms]",
++        .help       = "send keys to the VM (e.g. 'sendkey ctrl-alt-f1', default hold time=100 ms)",
++        .user_print = monitor_user_noop,
++        .mhandler.cmd_new = do_sendkey,
++    },
++
++SQMP
++sendkey
++----------
++
++Send keys to the VM.
++
++Arguments:
++
++- "string": key name 
++- "hold_time": time that key gets holded
++
++Example:
++
++-> { "execute": "sendkey", "arguments": { "string": "ctrl-alt-f1" } }
++<- { "return": {} }
++
++EQMP
++
++    {
+         .name       = "system_reset",
+         .args_type  = "",
+         .params     = "",
+diff -u -r ./ui/vnc.c ../osimage-autotest/qemu-kvm-0.15.1//ui/vnc.c
+--- ./ui/vnc.c	2012-06-23 11:34:13.000000000 -0300
++++ ../osimage-autotest/qemu-kvm-0.15.1//ui/vnc.c	2012-03-07 11:25:41.000000000 -0300
+@@ -1442,8 +1442,210 @@
+     }
+ }
+ 
++typedef struct {
++    int keycode;
++    const char *name;
++} KeyDef;
++
++static const KeyDef key_defs[] = {
++    { 0x2a, "shift" },
++    { 0x36, "shift_r" },
++
++    { 0x38, "alt" },
++    { 0xb8, "alt_r" },
++    { 0x64, "altgr" },
++    { 0xe4, "altgr_r" },
++    { 0x1d, "ctrl" },
++    { 0x9d, "ctrl_r" },
++
++    { 0xdd, "menu" },
++
++    { 0x01, "esc" },
++
++    { 0x02, "1" },
++    { 0x03, "2" },
++    { 0x04, "3" },
++    { 0x05, "4" },
++    { 0x06, "5" },
++    { 0x07, "6" },
++    { 0x08, "7" },
++    { 0x09, "8" },
++    { 0x0a, "9" },
++    { 0x0b, "0" },
++    { 0x0c, "minus" },
++    { 0x0d, "equal" },
++    { 0x0e, "backspace" },
++
++    { 0x0f, "tab" },
++    { 0x10, "q" },
++    { 0x11, "w" },
++    { 0x12, "e" },
++    { 0x13, "r" },
++    { 0x14, "t" },
++    { 0x15, "y" },
++    { 0x16, "u" },
++    { 0x17, "i" },
++    { 0x18, "o" },
++    { 0x19, "p" },
++    { 0x1a, "bracket_left" },
++    { 0x1b, "bracket_right" },
++    { 0x1c, "ret" },
++
++    { 0x1e, "a" },
++    { 0x1f, "s" },
++    { 0x20, "d" },
++    { 0x21, "f" },
++    { 0x22, "g" },
++    { 0x23, "h" },
++    { 0x24, "j" },
++    { 0x25, "k" },
++    { 0x26, "l" },
++    { 0x27, "semicolon" },
++    { 0x28, "apostrophe" },
++    { 0x29, "grave_accent" },
++
++    { 0x2b, "backslash" },
++    { 0x2c, "z" },
++    { 0x2d, "x" },
++    { 0x2e, "c" },
++    { 0x2f, "v" },
++    { 0x30, "b" },
++    { 0x31, "n" },
++    { 0x32, "m" },
++    { 0x33, "comma" },
++    { 0x34, "dot" },
++    { 0x35, "slash" },
++
++    { 0x37, "asterisk" },
++
++    { 0x39, "spc" },
++    { 0x3a, "caps_lock" },
++    { 0x3b, "f1" },
++    { 0x3c, "f2" },
++    { 0x3d, "f3" },
++    { 0x3e, "f4" },
++    { 0x3f, "f5" },
++    { 0x40, "f6" },
++    { 0x41, "f7" },
++    { 0x42, "f8" },
++    { 0x43, "f9" },
++    { 0x44, "f10" },
++    { 0x45, "num_lock" },
++    { 0x46, "scroll_lock" },
++
++    { 0xb5, "kp_divide" },
++    { 0x37, "kp_multiply" },
++    { 0x4a, "kp_subtract" },
++    { 0x4e, "kp_add" },
++    { 0x9c, "kp_enter" },
++    { 0x53, "kp_decimal" },
++    { 0x54, "sysrq" },
++
++    { 0x52, "kp_0" },
++    { 0x4f, "kp_1" },
++    { 0x50, "kp_2" },
++    { 0x51, "kp_3" },
++    { 0x4b, "kp_4" },
++    { 0x4c, "kp_5" },
++    { 0x4d, "kp_6" },
++    { 0x47, "kp_7" },
++    { 0x48, "kp_8" },
++    { 0x49, "kp_9" },
++
++    { 0x56, "<" },
++
++    { 0x57, "f11" },
++    { 0x58, "f12" },
++
++    { 0xb7, "print" },
++
++    { 0xc7, "home" },
++    { 0xc9, "pgup" },
++    { 0xd1, "pgdn" },
++    { 0xcf, "end" },
++
++    { 0xcb, "left" },
++    { 0xc8, "up" },
++    { 0xd0, "down" },
++    { 0xcd, "right" },
++
++    { 0xd2, "insert" },
++    { 0xd3, "delete" },
++#if defined(TARGET_SPARC) && !defined(TARGET_SPARC64)
++    { 0xf0, "stop" },
++    { 0xf1, "again" },
++    { 0xf2, "props" },
++    { 0xf3, "undo" },
++    { 0xf4, "front" },
++    { 0xf5, "copy" },
++    { 0xf6, "open" },
++    { 0xf7, "paste" },
++    { 0xf8, "find" },
++    { 0xf9, "cut" },
++    { 0xfa, "lf" },
++    { 0xfb, "help" },
++    { 0xfc, "meta_l" },
++    { 0xfd, "meta_r" },
++    { 0xfe, "compose" },
++#endif
++    { 0, NULL },
++};
++
++const char * get_keystr(int keycode)
++{
++    const KeyDef *p;
++
++/*    char *endp;
++    int ret; */
++
++    for(p = key_defs; p->name != NULL; p++) {
++        if (p->keycode == keycode)
++            return p->name;
++    }
++	return NULL;
++
++/*    if (strstart(key, "0x", NULL)) {
++        ret = strtoul(key, &endp, 0);
++        if (*endp == '\0' && ret >= 0x01 && ret <= 0xff)
++            return ret;
++    }
++    return -1;*/
++}
++
++static int get_keycode(const char *key)
++{
++    const KeyDef *p;
++    char *endp;
++    int ret;
++
++    for(p = key_defs; p->name != NULL; p++) {
++        if (!strcmp(key, p->name))
++            return p->keycode;
++    }
++    if (strstart(key, "0x", NULL)) {
++        ret = strtoul(key, &endp, 0);
++        if (*endp == '\0' && ret >= 0x01 && ret <= 0xff)
++            return ret;
++    }
++    return -1;
++}
++
++
+ static void do_key_event(VncState *vs, int down, int keycode, int sym)
+ {
++	// printf("Key code %d, down %d, key name %s, sym %s\n", keycode, down, get_keystr(keycode), sym);
++
++	/*
++	QString * keyname = qstring_new();
++	qstring_append(keyname, get_keystr(keycode));
++	vs->info = keyname;
++    vnc_qmp_event(vs, QEVENT_VNC_KEYEVENT); */
++
++	QObject *data;
++	data = qobject_from_jsonf("{ 'key': %s, 'down': %d }", get_keystr(keycode), down);
++	monitor_protocol_event(QEVENT_VNC_KEYEVENT, data);
++	qobject_decref(data);
++
+     /* QEMU console switch */
+     switch(keycode) {
+     case 0x2a:                          /* Left Shift */
+
